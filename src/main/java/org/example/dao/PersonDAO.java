@@ -1,65 +1,67 @@
 package org.example.dao;
 
 import org.example.models.Person;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
 @Component
 public class PersonDAO {
-
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionFactory sessionFactory;
 
     @Autowired
-    public PersonDAO(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public PersonDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
+    @Transactional(readOnly = true)
     public List<Person> index() {
         //return jdbcTemplate.query("SELECT * FROM Person", new PersonMapper()); // Свой маппер
         // BeanPropertyRowMapper - конвертирует строки из Person.class
-        return jdbcTemplate.query("SELECT * FROM Person", new BeanPropertyRowMapper<>(Person.class));
+        //return jdbcTemplate.query("SELECT * FROM Person", new BeanPropertyRowMapper<>(Person.class));
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("select p from Person p", Person.class)
+                .getResultList();
     }
 
     public Optional<Person> show(String email) {
-        return jdbcTemplate.query("SELECT * FROM Person WHERE email=?",
+        /*return jdbcTemplate.query("SELECT * FROM Person WHERE email=?",
                 new Object[] {email},
-                new BeanPropertyRowMapper<>(Person.class)).stream().findAny();
+                new BeanPropertyRowMapper<>(Person.class)).stream().findAny();*/
+        return Optional.empty();
     }
 
     public Person show(int id) {
-        return jdbcTemplate.query("SELECT * FROM Person WHERE id=?",
+        /*return jdbcTemplate.query("SELECT * FROM Person WHERE id=?",
                 new Object[]{id},
                 new BeanPropertyRowMapper<>(Person.class))
-                .stream().findAny().orElse(null);
+                .stream().findAny().orElse(null);*/
+        return null;
     }
 
     public void save(Person person) {
-        jdbcTemplate.update("INSERT INTO Person(name, age, email, address) VALUES(?, ?, ?, ?)",
+        /*jdbcTemplate.update("INSERT INTO Person(name, age, email, address) VALUES(?, ?, ?, ?)",
                 person.getName(),
                 person.getAge(),
                 person.getEmail(),
-                person.getAddress());
+                person.getAddress());*/
     }
 
-
     public void update(int id, Person updatedPerson) {
-        jdbcTemplate.update("UPDATE Person SET name=?, age=?, email=?, address=? WHERE id=?", updatedPerson.getName(),
-                updatedPerson.getAge(), updatedPerson.getEmail(), updatedPerson.getAddress(), id);
+        /*jdbcTemplate.update("UPDATE Person SET name=?, age=?, email=?, address=? WHERE id=?", updatedPerson.getName(),
+                updatedPerson.getAge(), updatedPerson.getEmail(), updatedPerson.getAddress(), id);*/
     }
 
     public void delete(int id) {
-        jdbcTemplate.update("DELETE FROM Person WHERE id=?", id);
+        //jdbcTemplate.update("DELETE FROM Person WHERE id=?", id);
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
+/*    //////////////////////////////////////////////////////////////////////////////////
     ////////////// Тестируем производительность пакетной вставки /////////////////////
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -115,5 +117,5 @@ public class PersonDAO {
             people.add(new Person(i, "Name" + i, 30, "name" + i + "@mail.ru", "some address"));
         }
         return people;
-    }
+    }*/
 }

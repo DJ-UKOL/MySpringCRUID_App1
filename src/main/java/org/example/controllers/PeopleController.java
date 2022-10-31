@@ -2,36 +2,31 @@ package org.example.controllers;
 
 import org.example.dao.PersonDAO;
 import org.example.models.Person;
-import org.example.util.PersonValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-
 @Controller
 @RequestMapping("/people")
 public class PeopleController {
 
-    private PersonDAO personDAO;
-    private PersonValidator personValidator;
+    private final PersonDAO personDAO;
 
-    public PeopleController(PersonDAO personDAO, PersonValidator personValidator) {
+    @Autowired
+    public PeopleController(PersonDAO personDAO) {
         this.personDAO = personDAO;
-        this.personValidator = personValidator;
     }
 
     @GetMapping()
     public String index(Model model) {
-        // Получим всех людей из DAO и передадим на отображение в представление
         model.addAttribute("people", personDAO.index());
         return "people/index";
     }
 
     @GetMapping("/{id}")
     public String show(@PathVariable("id") int id, Model model) {
-        // Получим одного человека по id из DAO и передадим на отображение в представление
         model.addAttribute("person", personDAO.show(id));
         return "people/show";
     }
@@ -42,12 +37,9 @@ public class PeopleController {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("person") @Valid Person person,
+    public String create(@ModelAttribute("person") Person person,
                          BindingResult bindingResult) {
-
-        personValidator.validate(person, bindingResult);
-
-        if(bindingResult.hasErrors())
+        if (bindingResult.hasErrors())
             return "people/new";
 
         personDAO.save(person);
@@ -61,7 +53,7 @@ public class PeopleController {
     }
 
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult,
+    public String update(@ModelAttribute("person") Person person, BindingResult bindingResult,
                          @PathVariable("id") int id) {
         if (bindingResult.hasErrors())
             return "people/edit";
