@@ -36,29 +36,44 @@ public class PersonDAO {
         return Optional.empty();
     }
 
+    @Transactional(readOnly = true)
     public Person show(int id) {
         /*return jdbcTemplate.query("SELECT * FROM Person WHERE id=?",
                 new Object[]{id},
                 new BeanPropertyRowMapper<>(Person.class))
                 .stream().findAny().orElse(null);*/
-        return null;
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(Person.class, id);
     }
 
+    @Transactional
     public void save(Person person) {
         /*jdbcTemplate.update("INSERT INTO Person(name, age, email, address) VALUES(?, ?, ?, ?)",
                 person.getName(),
                 person.getAge(),
                 person.getEmail(),
                 person.getAddress());*/
+        Session session = sessionFactory.getCurrentSession();
+        session.save(person);
     }
 
+    @Transactional
     public void update(int id, Person updatedPerson) {
         /*jdbcTemplate.update("UPDATE Person SET name=?, age=?, email=?, address=? WHERE id=?", updatedPerson.getName(),
                 updatedPerson.getAge(), updatedPerson.getEmail(), updatedPerson.getAddress(), id);*/
+        Session session = sessionFactory.getCurrentSession();
+        Person personToBeUpdate = session.get(Person.class, id);
+
+        personToBeUpdate.setName(updatedPerson.getName());
+        personToBeUpdate.setAge(updatedPerson.getAge());
+        personToBeUpdate.setEmail(updatedPerson.getEmail());
     }
 
+    @Transactional
     public void delete(int id) {
         //jdbcTemplate.update("DELETE FROM Person WHERE id=?", id);
+        Session session = sessionFactory.getCurrentSession();
+        session.delete(session.get(Person.class, id));
     }
 
 /*    //////////////////////////////////////////////////////////////////////////////////
