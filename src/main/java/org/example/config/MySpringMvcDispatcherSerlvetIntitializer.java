@@ -29,12 +29,13 @@ public class MySpringMvcDispatcherSerlvetIntitializer extends AbstractAnnotation
     @Override
     public void onStartup(ServletContext aServletContext) throws ServletException {
         super.onStartup(aServletContext);
+        registerCharacterEncodingFilter(aServletContext);
         registerHiddenFieldFilter(aServletContext);
     }
 
     private void registerHiddenFieldFilter(ServletContext aContext) {
         aContext.addFilter("hiddenHttpMethodFilter",
-                new HiddenHttpMethodFilter()).addMappingForUrlPatterns(null ,true, "/*");
+                new HiddenHttpMethodFilter()).addMappingForUrlPatterns(null, true, "/*");
     }
 
     private void registerCharacterEncodingFilter(ServletContext aContext) {
