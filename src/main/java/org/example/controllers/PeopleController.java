@@ -14,15 +14,18 @@ import org.springframework.web.bind.annotation.*;
 public class PeopleController {
 
     private final PeopleService peopleService;
+    private final PersonDAO personDAO;
 
     @Autowired
-    public PeopleController(PeopleService peopleService) {
+    public PeopleController(PeopleService peopleService, PersonDAO personDAO) {
         this.peopleService = peopleService;
+        this.personDAO = personDAO;
     }
 
     @GetMapping()
     public String index(Model model) {
-        model.addAttribute("people", peopleService.findAll());
+        //model.addAttribute("people", peopleService.findAll());
+        personDAO.testNPlus1();
         return "people/index";
     }
 

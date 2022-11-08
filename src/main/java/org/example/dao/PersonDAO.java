@@ -2,21 +2,31 @@ package org.example.dao;
 
 import org.example.models.Person;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class PersonDAO {
-    private final SessionFactory sessionFactory;
+
+/*    private final SessionFactory sessionFactory;
 
     @Autowired
     public PersonDAO(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
+    }*/
+
+    private final EntityManager entityManager;
+
+    @Autowired
+    public PersonDAO(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
@@ -24,7 +34,8 @@ public class PersonDAO {
         //return jdbcTemplate.query("SELECT * FROM Person", new PersonMapper()); // Свой маппер
         // BeanPropertyRowMapper - конвертирует строки из Person.class
         //return jdbcTemplate.query("SELECT * FROM Person", new BeanPropertyRowMapper<>(Person.class));
-        Session session = sessionFactory.getCurrentSession();
+        //Session session = sessionFactory.getCurrentSession();
+        Session session = entityManager.unwrap(Session.class);
         return session.createQuery("select p from Person p", Person.class)
                 .getResultList();
     }
@@ -42,7 +53,8 @@ public class PersonDAO {
                 new Object[]{id},
                 new BeanPropertyRowMapper<>(Person.class))
                 .stream().findAny().orElse(null);*/
-        Session session = sessionFactory.getCurrentSession();
+        //Session session = sessionFactory.getCurrentSession();
+        Session session = entityManager.unwrap(Session.class);
         return session.get(Person.class, id);
     }
 
@@ -53,7 +65,8 @@ public class PersonDAO {
                 person.getAge(),
                 person.getEmail(),
                 person.getAddress());*/
-        Session session = sessionFactory.getCurrentSession();
+        //Session session = sessionFactory.getCurrentSession();
+        Session session = entityManager.unwrap(Session.class);
         session.save(person);
     }
 
@@ -61,7 +74,8 @@ public class PersonDAO {
     public void update(int id, Person updatedPerson) {
         /*jdbcTemplate.update("UPDATE Person SET name=?, age=?, email=?, address=? WHERE id=?", updatedPerson.getName(),
                 updatedPerson.getAge(), updatedPerson.getEmail(), updatedPerson.getAddress(), id);*/
-        Session session = sessionFactory.getCurrentSession();
+        //Session session = sessionFactory.getCurrentSession();
+        Session session = entityManager.unwrap(Session.class);
         Person personToBeUpdate = session.get(Person.class, id);
 
         personToBeUpdate.setName(updatedPerson.getName());
@@ -72,8 +86,29 @@ public class PersonDAO {
     @Transactional
     public void delete(int id) {
         //jdbcTemplate.update("DELETE FROM Person WHERE id=?", id);
-        Session session = sessionFactory.getCurrentSession();
+        //Session session = sessionFactory.getCurrentSession();
+        Session session = entityManager.unwrap(Session.class);
         session.delete(session.get(Person.class, id));
+    }
+
+    @Transactional(readOnly = true)
+    public void testNPlus1() {
+        Session session = entityManager.unwrap(Session.class);
+
+/*        // 1 запрос к БД
+        List<Person> people = session.createQuery("select p from Person p", Person.class)
+                .getResultList();
+
+        // N запросов к БД
+        for (Person person : people) {
+            System.out.println("Person " + person.getName() + " has " + person.getItems());
+        }*/
+
+        Set<Person> people = new HashSet<Person>(session.createQuery("select p from Person p LEFT JOIN FETCH p.items")
+                .getResultList());
+        for (Person person:people) {
+            System.out.println("Person " + person.getName() + " has " + person.getItems());
+        }
     }
 
 /*    //////////////////////////////////////////////////////////////////////////////////
